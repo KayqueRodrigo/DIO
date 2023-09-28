@@ -1,32 +1,61 @@
+const pokemonList = document.getElementById('pokemonList')
+const loadMoreButton = document.getElementById('loadMoreButton')
+
+const maxRecords = 151
+const limit = 10
+let offset = 0;
 
 function convertPokemonToLi(pokemon) {
     return `
-    <ol class="pokemons" ${pokemon.type}>
-        <li class="pokemon">
-            <span class="namber">#${pokemon.number}</span>
+        <li class="pokemon ${pokemon.type}">
+            <span class="number">#${pokemon.number}</span>
             <span class="name">${pokemon.name}</span>
-            
+
             <div class="detail">
                 <ol class="types">
                     ${pokemon.types.map((type) => `<li class="type ${type}">${type}</li>`).join('')}
                 </ol>
-            <img src="${pokemon.photo}" alt="${pokemon.name}">
 
+                <img src="${pokemon.photo}"
+                     alt="${pokemon.name}">
             </div>
         </li>
-    </ol>
     `
 }
 
-    //Pangando a lista no arquivo HTML atravas do document que a referencia
-    const pokemonList = document.getElementById('pokemonList')
-
-    //Fizemos a requisição //Resebemos essa requisão
-    pokeApi.getPokemons().then((pokemons = []) => {
-        //Transformando em uma lista de html
-        pokemonList.innerHTML += pokemons.map(convertPokemonToLi).join('')
-        //O join() juntará todos os elementos da list em uma string(Com o separador que colocarmos no parenteses e por defaul é',')
-        //const newHtml = newList.join('')
+function loadPokemonItens(offset, limit) {
+    pokeApi.getPokemons(offset, limit).then((pokemons = []) => {
+        const newHtml = pokemons.map(convertPokemonToLi).join('')
+        pokemonList.innerHTML += newHtml
     })
-    
+}
 
+loadPokemonItens(offset, limit)
+
+loadMoreButton.addEventListener('click', () => {
+    offset += limit
+    const qtdRecordsWithNexPage = offset + limit
+
+    if (qtdRecordsWithNexPage >= maxRecords) {
+        const newLimit = maxRecords - offset
+        loadPokemonItens(offset, newLimit)
+
+        loadMoreButton.parentElement.removeChild(loadMoreButton)
+    } else {
+        loadPokemonItens(offset, limit)
+    }
+})
+
+//TODO convertetoliDelalhe
+
+
+
+//TODO ao clicar aparece o detalhe e ao clicar novamente volta
+pokemonList.addEventListener("mouseover", () => {
+    const legenda = document.getElementById("legenda")
+    legenda.classList.remove("detalhe")
+});
+pokemonList.addEventListener("mouseout", () => {
+    const legenda = document.getElementById("legenda")
+    legenda.classList.add("detalhe")
+});
